@@ -14,18 +14,6 @@ const privateKey = process.env.PRIVATE_KEY || "0x0123456789012345678901234567890
 
 const client = new MongoClient(uri);
 
-const store = new MessageStore({
-  setItem: async (key: string, data): Promise<void> => {
-    await client.db("prod").collection("messages").insertOne({ _id: key, ...data });
-  },
-  getItem: (key: string): Promise<any> => {
-    return client.db("prod").collection("messages").findOne({ _id: key });
-  },
-  deleteItem: async (key: string): Promise<void> => {
-    await client.db("prod").collection("messages").deleteOne({ _id: key });
-  }
-});
-
 const handler = new Handler({
   users: {
     create: async (message: Message): Promise<any> => {
@@ -44,7 +32,7 @@ const handler = new Handler({
     },
     // ...
   }
-}, store);
+});
 
 const app = express();
 
@@ -71,7 +59,6 @@ client.connect().then(() => {
     
     const signed = await Message.issue(wallet, {
       type: ".users.create",
-      validFor: 1,
       validUntil: new Date(Date.now() + 30*1000),
       signedData: {
         email: "apoorv@venlocode.com"

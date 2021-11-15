@@ -8,7 +8,6 @@ export type SignedMessage = {
 
 export type MessageOptions = {
   creator: string,
-  validFor: number,
   validUntil: Date,
   type: string,
   signedData: any,
@@ -18,16 +17,14 @@ export type MessageOptions = {
 
 class Message {
   creator: string;
-  validFor: number;
   validUntil: Date;
   type: string;
   signedData: any;
   unsignedData: any;
   signed: { raw: string, signature: string };
 
-  constructor({ creator, validFor, validUntil, type, signedData, unsignedData, signed }: MessageOptions) {
+  constructor({ creator, validUntil, type, signedData, unsignedData, signed }: MessageOptions) {
     this.creator = creator;
-    this.validFor = validFor;
     this.validUntil = validUntil;
     this.type = type;
     this.signedData = signedData;
@@ -41,7 +38,6 @@ class Message {
 
     return new Message({
       creator: creator,
-      validFor: message.validFor,
       validUntil: new Date(message.validUntil),
       type: message.type,
       signedData: message.signedData,
@@ -50,8 +46,8 @@ class Message {
     });
   }
 
-  static async issue(wallet: ethers.Wallet, { type, validFor, validUntil, signedData }: { type: string, validFor: number, validUntil: Date, signedData: any }): Promise<SignedMessage> {
-    const raw = Buffer.from(JSON.stringify({ type, validFor, validUntil, signedData }));
+  static async issue(wallet: ethers.Wallet, { type, validUntil, signedData }: { type: string, validUntil: Date, signedData: any }): Promise<SignedMessage> {
+    const raw = Buffer.from(JSON.stringify({ type, validUntil, signedData }));
     const signature = await wallet.signMessage(raw);
 
     return { raw: raw.toString(), signature };
