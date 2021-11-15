@@ -4,7 +4,7 @@ import express from "express";
 import { Wallet } from "ethers";
 import { MongoClient } from "mongodb";
 
-import { MessageStore, Message, Handler } from "..";
+import { Message, Handler } from "..";
 
 dotenv.config();
 
@@ -18,17 +18,14 @@ const handler = new Handler({
   users: {
     create: async (message: Message): Promise<any> => {
       const { creator, signedData: { email } } = message;
-
       // send verification email etc
-
-      console.log(`${creator} created user ${email}`);
       // @ts-ignore
       await client.db("prod").collection("users").insertOne({ _id: creator, email, verified: false });
+      console.log(`${creator} created user ${email}`);
     },
     updateProfile: async (message: Message): Promise<any> => {
-      const { creator, signedData: { displayName, photoURL } } = message;
-
-      await client.db("prod").collection("users").updateOne({ _id: creator }, { displayName, photoURL });
+      const { creator, signedData: { email, displayName, photoURL } } = message;
+      await client.db("prod").collection("users").updateOne({ _id: creator }, { email, displayName, photoURL });
     },
     // ...
   }
