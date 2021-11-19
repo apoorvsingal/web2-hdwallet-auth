@@ -1,3 +1,11 @@
+# web2-hdwallet-auth
+
+Implementing proper session management, device sync, OAuth, etc. in the standard web 2 way is a pain. HD Wallets are pretty good at it tho.
+
+## Example
+
+```ts
+// examples/express-mongo-userprofile.ts
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 import express from "express";
@@ -14,6 +22,7 @@ const privateKey = process.env.PRIVATE_KEY || "0x0123456789012345678901234567890
 
 const client = new MongoClient(uri);
 
+// Message handler. Used for verifying signed messages and executing the right subroutines based on the messages.
 const handler = new Handler({
   users: {
     create: async (message: Message): Promise<any> => {
@@ -35,6 +44,7 @@ const app = express();
 
 app.use(express.json());
 
+// Execute signed messages and send a 200 status if the execution is successful
 app.post("/api/exec", async (req, res) => {
   try {
     await handler.execSigned(req.body);
@@ -57,7 +67,7 @@ client.connect().then(() => {
     const wallet = new Wallet(privateKey);
     
     const signed = await Message.issue(wallet, {
-      type: ".users.create",
+      type: ".users.create", // the subroutine path, separated by periods
       validUntil: new Date(Date.now() + 30*1000),
       signedData: { email: "apoorv@venlocode.com" },
     });
@@ -69,6 +79,7 @@ client.connect().then(() => {
       },
       body: JSON.stringify(signed)
     // @ts-ignore
-    }).then(res => res.json()));
+    }).then(res => res.json())); // prints { ok: true } in the first call and "_id already exists" in the next ones
   });
 });
+```
